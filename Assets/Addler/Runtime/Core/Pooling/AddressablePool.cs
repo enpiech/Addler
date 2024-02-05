@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using Addler.Runtime.Core.LifetimeBinding;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -139,14 +140,20 @@ namespace Addler.Runtime.Core.Pooling
                                              .Throw();
                     }
 
-                    for (var i = 0; i < diffCount; i++)
+                    var prefab = asyncOperationHandle.Result;
+                    bool prefabIsActive = prefab.activeSelf;
+                    prefab.SetActive(false);
+
+                    for (int i = 0; i < diffCount; i++)
                     {
-                        var instance = GameObject.Instantiate(asyncOperationHandle.Result,
+                        var instance = Object.Instantiate(asyncOperationHandle.Result,
                             Vector3.one * 1000, Quaternion.identity, Parent.transform);
 
                         instance.SetActive(false);
                         _usableObjects.Push(instance);
                     }
+
+                    prefab.SetActive(prefabIsActive);
 
                     break;
                 }
